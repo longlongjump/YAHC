@@ -9,8 +9,6 @@
 namespace huffman
 {
 
-
-
   class streamBits
   {
   public:
@@ -25,15 +23,18 @@ namespace huffman
 
   class InnerNode;
   typedef boost::shared_ptr<InnerNode> nodePtr;
+  
+  class LeafNode;
+  typedef boost::shared_ptr<LeafNode> leafPtr;
 
  
   struct InnerNode
   {
-  private:
-    nodePtr left,right;
-    
   public:
+    nodePtr left,right;
     int frequency;
+    streamBits bits;
+
   InnerNode(int frequency):frequency(frequency)
     {
     }
@@ -44,39 +45,52 @@ namespace huffman
     virtual void addBit(int bit)
     {
       bits.addBit(bit);
-      left->addBit(bit);
-      right->addBit(bit);
+      if (hasLeftNode())
+	{
+	  left->addBit(bit);
+	}
+      if (hasRightNode())
+	{
+	  right->addBit(bit);
+	}
+    }
+
+    bool hasLeftNode()
+    {
+      return left;
+    }
+
+    bool hasRightNode()
+    {
+      return right;
     }
 
     virtual void setLeft(nodePtr node)
     {
+      frequency+=node->frequency;
       left = node;
     }    
 
     virtual void setRight(nodePtr node)
     {
+      frequency+=node->frequency;
       right = node; 
     }
   };
 
   struct LeafNode: public InnerNode
   {
-
-    streamBits bits;
     unsigned char code;
   public:
   LeafNode(int frequency, unsigned char code):InnerNode(frequency),
-      bit_to_set(0)
-      code(code),
-      
+      code(code)
     {
     }
     virtual ~LeafNode()
       {}
   };
 
-Node *huffmanTree(std::vector<unsigned char>& indices, 
-		  std::vector<unsigned char>& codes);
+  nodePtr  huffmanTree(std::vector<unsigned char>& codes);
 
 }//namespace huffman
 
